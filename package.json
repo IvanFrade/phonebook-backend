@@ -1,0 +1,28 @@
+{
+  "name": "phonebook_backend",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Smprvrd/phonebook-backend.git"
+  },
+  "author": "Ivan Fradellin",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Smprvrd/phonebook-backend/issues"
+  },
+  "homepage": "https://github.com/Smprvrd/phonebook-backend#readme",
+  "devDependencies": {
+    "nodemon": "^2.0.15",
+    "morgan": "^1.10.0"
+  },
+  "dependencies": {
+    "express": "^4.17.3"
+  }
+}
