@@ -1,37 +1,27 @@
+require('dotenv').config()
 const express = require('express')
 const app = express()
 app.use(express.json())
 app.use(express.static('build'))
+
 const cors = require('cors')
 app.use(cors())
 
-/*const morgan = require('morgan')
+/* more debugging
+const morgan = require('morgan')
 morgan.token('body', (req, res) => JSON.stringify(req.body))
-
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms - :body'))*/
 
-let persons = [
-    { 
-      "id": 1,
-      "name": "Arto Hellas", 
-      "number": "040-123456"
-    },
-    { 
-      "id": 2,
-      "name": "Ada Lovelace", 
-      "number": "39-44-5323523"
-    },
-    { 
-      "id": 3,
-      "name": "Dan Abramov", 
-      "number": "12-43-234345"
-    },
-    { 
-      "id": 4,
-      "name": "Mary Poppendieck", 
-      "number": "39-23-6423122"
-    }
-]
+const requestLogger = (request, response, next) => {
+    console.log(`Method: ${request.method}`)
+    console.log(`Path: ${request.path}`)
+    console.log(`Body: ${request.body}`)
+    console.log('---')
+    next()
+}
+app.use(requestLogger)
+
+const Person = require('./models/person')
 
 app.get('/info', (request, response) => {
     let date = new Date()
@@ -39,32 +29,31 @@ app.get('/info', (request, response) => {
 })
 
 app.get('/api/persons', (request, response) => {
-    response.json(persons)
+    Person.find({}).then(persons => {
+        response.json(persons)
+    })
 })
 
 app.get('/api/persons/:id', (request, response) => {
-    const id = Number(request.params.id)
-    const person = persons.find(person => person.id === id)
-
-    if (person) {
+    Person.findById(request.params.id).then(person => {
         response.json(person)
-    } else {
-        response.status(404).end()
-    }
+    })
 })
 
+/* TODO: fix
 app.delete('/api/persons/:id', (request, response) => {
     const id = Number(request.params.id)
     persons = persons.filter(person => person.id !== id)
 
     response.status(204).end()
-})
+})*/
 
+/* not used anymore
 const generateId = () => {
     const id = Math.floor(Math.random() * 99999)
 
     return id
-}
+}*/
 
 app.post('/api/persons', (request, response) => {
     const body = request.body
@@ -75,23 +64,32 @@ app.post('/api/persons', (request, response) => {
         })
     }
 
+    // TODO: fix later, its fine for now
+    /*
     if (persons.find(person => person.name === body.name)) {
         return response.status(400).json({
             error: 'name must be unique'
         })
-    }
+    }*/
 
-    const person = {
-        id: generateId(), 
+    const person = new Person({
         name: body.name, 
         number: body.number
-    }
+    })
 
-    persons = persons.concat(person)
-    return response.json(person)
+    person.save().then(savedPerson => {
+        response.json(savedPerson)
+    })
 })
 
-const PORT = process.env.PORT || 3001
+const unknownEndpoint = (request, response) => {
+    response.status(404).send({
+        error: 'unknown endpoint'
+    })
+}
+app.use(unknownEndpoint)
+
+const PORT = process.env.PORT
 app.listen(PORT, () => {
     console.log(`Running on port ${PORT}`)
 })
